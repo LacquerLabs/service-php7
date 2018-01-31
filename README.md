@@ -1,5 +1,5 @@
 # service-php7
-Quick and dirty nginx => PHP7fpm server running on alpine3.6
+Quick and dirty nginx => PHP7fpm server running on alpine 3.7
 
 Use `make` in the directory to see your options.
 
