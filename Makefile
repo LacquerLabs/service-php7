@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := help
 
 ORG = lacquerlabs
-NAME = service-webapp
+NAME = service-php7
 IMAGE = $(ORG)/$(NAME)
 VERSION = 2.0.0
 PORT_INT = 80
