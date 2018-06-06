@@ -5,7 +5,7 @@ Use `make` in the directory to see your options.
 
 Make your php app in `/code`
 
-## Make Options
+## All Make Options
 * `build` Build it
 * `buildnocache` Build it without using cache
 * `tag` tag the container with the current VERSION (used for doing a release)
