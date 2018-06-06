@@ -25,6 +25,7 @@ RUN apk --update --no-cache add nginx php7-fpm dumb-init tzdata && \
 	apk del tzdata
 
 # Setup the www-data user
+# Working?
 # RUN addgroup -g 82 -S www-data && \
   RUN adduser -u 82 -D -S -G www-data www-data
 
