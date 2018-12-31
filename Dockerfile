@@ -1,4 +1,4 @@
-FROM alpine:3.7
+FROM alpine:3.8
 
 # Load ash profile on launch
 ENV ENV="/etc/profile"
@@ -7,8 +7,8 @@ ENV ENV="/etc/profile"
 ENV TIMEZONE            America/New_York
 
 # configure our PHP limits
-ENV PHP_MEMORY_LIMIT    512M
-ENV MAX_UPLOAD          50M
+ENV PHP_MEMORY_LIMIT    256M
+ENV MAX_UPLOAD          100M
 ENV PHP_MAX_FILE_UPLOAD 50
 ENV PHP_MAX_POST        100M
 
@@ -18,8 +18,8 @@ RUN mv /etc/profile.d/color_prompt /etc/profile.d/color_prompt.sh && \
 	echo alias dir=\'ls -alh --color\' >> /etc/profile && \
 	mkdir -p /app /run/nginx /run/php7
 
-# install php7-fpm and a db extension
-RUN apk --update --no-cache add nginx php7-fpm dumb-init tzdata && \
+# install nginx and php7-fpm
+RUN apk --update --no-cache add nginx php7-fpm openssl dumb-init tzdata && \
 	cp /usr/share/zoneinfo/${TIMEZONE} /etc/localtime && \
 	echo "${TIMEZONE}" > /etc/timezone && \
 	apk del tzdata
@@ -49,9 +49,6 @@ COPY ./configs/default.conf /etc/nginx/conf.d/default.conf
 # setup our working directory
 WORKDIR /app
 COPY ./code .
-
-# download and set the user/pass pair for wordpress
-# ADD https://wordpress.org/latest.tar.gz .
 RUN chown -R www-data:www-data /app
 
 # expose our service port

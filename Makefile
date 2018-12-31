@@ -3,12 +3,12 @@
 ORG = lacquerlabs
 NAME = service-php7
 IMAGE = $(ORG)/$(NAME)
-VERSION = 2.0.0
+VERSION = 2.0.1
 PORT_INT = 80
 PORT_EXT = 8020
 
 build: ## Build it
-	docker build -t $(IMAGE):latest .
+	docker build --squash -t $(IMAGE):latest .
 
 buildnocache: ## Build it without using cache
 	docker build --no-cache -t $(IMAGE):latest .
@@ -16,8 +16,11 @@ buildnocache: ## Build it without using cache
 tag: ## Tag it with $(VERSION)
 	docker tag $(IMAGE):latest $(IMAGE):$(VERSION)
 
-run: ## run it -v ${PWD}/code:/app/code
+run: ## run it detached
 	docker run -p $(PORT_EXT):$(PORT_INT) --name $(NAME)_run --rm -id $(IMAGE)
+
+runattached: ## run it attached
+	docker run -p $(PORT_EXT):$(PORT_INT) --name $(NAME)_run --rm -it $(IMAGE)
 
 runvolume: ## run it with code volume attached
 	docker run -p $(PORT_EXT):$(PORT_INT) --name $(NAME)_run -v ${PWD}/code:/app/code --rm -id $(IMAGE)
