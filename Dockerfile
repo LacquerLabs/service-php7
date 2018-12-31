@@ -51,6 +51,9 @@ WORKDIR /app
 COPY ./code .
 RUN chown -R www-data:www-data /app
 
+# Setup Volume for persistance
+VOLUME /app
+
 # expose our service port
 EXPOSE 80
 
