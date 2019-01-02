@@ -3,31 +3,27 @@ FROM alpine:3.8
 # Load ash profile on launch
 ENV ENV="/etc/profile"
 
-# Set the timezone
-ENV TIMEZONE            America/New_York
-
-# configure our PHP limits
-ENV PHP_MEMORY_LIMIT    256M
-ENV MAX_UPLOAD          100M
-ENV PHP_MAX_FILE_UPLOAD 50
-ENV PHP_MAX_POST        100M
+# Set the timezone and PHP ini settings
+ENV TIMEZONE=America/New_York \
+	PHP_MEMORY_LIMIT=256M \
+	MAX_UPLOAD=100M \
+	PHP_MAX_FILE_UPLOAD=50 \
+	PHP_MAX_POST=100M
 
 # Setup ash profile prompt and my old man alias
-# Create work directory
 RUN mv /etc/profile.d/color_prompt /etc/profile.d/color_prompt.sh && \
-	echo alias dir=\'ls -alh --color\' >> /etc/profile && \
-	mkdir -p /app /run/nginx /run/php7
+	echo alias dir=\'ls -alh --color\' >> /etc/profile
 
 # install nginx and php7-fpm
+# setup and make the working directories
+# setup timezone and delete the tzdata package
+# add the www-data user
 RUN apk --update --no-cache add nginx php7-fpm openssl dumb-init tzdata && \
+	mkdir -p /app /run/nginx /run/php7 && \
 	cp /usr/share/zoneinfo/${TIMEZONE} /etc/localtime && \
 	echo "${TIMEZONE}" > /etc/timezone && \
-	apk del tzdata
-
-# Setup the www-data user
-# Working?
-# RUN addgroup -g 82 -S www-data && \
-  RUN adduser -u 82 -D -S -G www-data www-data
+	apk del tzdata && \
+	adduser -u 82 -D -S -G www-data www-data
 
 # Manually make some changes for the PHP.INI file
 RUN sed -i "s|;*date.timezone =.*|date.timezone = ${TIMEZONE}|i" /etc/php7/php.ini && \
@@ -38,18 +34,17 @@ RUN sed -i "s|;*date.timezone =.*|date.timezone = ${TIMEZONE}|i" /etc/php7/php.i
     sed -i "s|;*cgi.fix_pathinfo=.*|cgi.fix_pathinfo= 0|i" /etc/php7/php.ini && \
     sed -i "s|;*error_log = .*|error_log = \/proc\/self\/fd\/1|i" /etc/php7/php.ini
 
-# own the run directory so php can save it's pid and socket
-RUN chown www-data /run/php7/
-
 # copy our config files over to the container
-COPY ./configs/php-fpm.conf /etc/php7/php-fpm.conf
-COPY ./configs/nginx.conf /etc/nginx/nginx.conf
-COPY ./configs/default.conf /etc/nginx/conf.d/default.conf
+COPY ./configs /etc
 
 # setup our working directory
+# copy over working code
 WORKDIR /app
 COPY ./code .
-RUN chown -R www-data:www-data /app
+
+# own the app dir and code and the run dirs
+RUN chown -R www-data:www-data /app && \
+	chown www-data /run/php7/
 
 # Setup Volume for persistance
 VOLUME /app
