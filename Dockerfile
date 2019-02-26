@@ -21,7 +21,7 @@ RUN mv /etc/profile.d/color_prompt /etc/profile.d/color_prompt.sh && \
 RUN apk --update --no-cache add nginx openssl dumb-init tzdata shadow \
     php7-fpm php7-json php7-gd php7-curl php7-dom php7-exif php7-gd \
     php7-iconv php7-imagick php7-json php7-mbstring php7-mysqli \
-    php7-simplexml php7-xml php7-xmlreader && \
+    php7-opcache php7-ctype php7-simplexml php7-xml php7-xmlreader && \
     mkdir -p /app /run/nginx /run/php7 && \
     cp /usr/share/zoneinfo/${TIMEZONE} /etc/localtime && \
     echo "${TIMEZONE}" > /etc/timezone && \

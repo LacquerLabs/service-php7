@@ -3,7 +3,7 @@
 ORG = lacquerlabs
 NAME = service-php7
 IMAGE = $(ORG)/$(NAME)
-VERSION = 2.0.9
+VERSION = 2.0.11
 PORT_INT = 8080
 PORT_EXT = 8080
 
