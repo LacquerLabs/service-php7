@@ -3,12 +3,12 @@
 ORG = lacquerlabs
 NAME = service-php7
 IMAGE = $(ORG)/$(NAME)
-VERSION = 2.0.3
-PORT_INT = 80
-PORT_EXT = 8020
+VERSION = 2.0.9
+PORT_INT = 8080
+PORT_EXT = 8080
 
 build: ## Build it
-	docker build --squash -t $(IMAGE):latest .
+	docker build -t $(IMAGE):latest .
 
 buildnocache: ## Build it without using cache
 	docker build --no-cache -t $(IMAGE):latest .
