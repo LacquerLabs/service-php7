@@ -23,7 +23,7 @@ runattached: ## run it attached
 	docker run -p $(PORT_EXT):$(PORT_INT) --name $(NAME)_run --rm -it $(IMAGE)
 
 runvolume: ## run it with code volume attached
-	docker run -p $(PORT_EXT):$(PORT_INT) --name $(NAME)_run -v ${PWD}/code:/app/code --rm -id $(IMAGE)
+	docker run -p $(PORT_EXT):$(PORT_INT) --name $(NAME)_run -v ${PWD}/working_code:/app --rm -id $(IMAGE)
 
 runshell: ## run the container with an interactive shell
 	docker run -p $(PORT_EXT):$(PORT_INT) --name $(NAME)_run --rm -it $(IMAGE) /bin/sh
