@@ -1,24 +1,27 @@
-FROM alpine:3.8
+FROM alpine:3.12
 
 # Load ash profile on launch
 ENV ENV="/etc/profile"
 
 # Set the timezone and PHP ini settings
-ENV TIMEZONE=America/New_York \
+ENV TIMEZONE=UTC \
     PHP_MEMORY_LIMIT=256M \
     MAX_UPLOAD=100M \
     PHP_MAX_FILE_UPLOAD=50 \
     PHP_MAX_POST=100M
 
-# Setup ash profile prompt and my old man alias
-RUN mv /etc/profile.d/color_prompt /etc/profile.d/color_prompt.sh && \
-    echo alias dir=\'ls -alh --color\' >> /etc/profile
+ENV DD_SERVICE=laquerlabs \
+    DD_TRACE_ENABLED=false \
+    DD_TRACE_NO_AUTOLOADER=true \
+    DD_DISTRIBUTED_TRACING=false \
+    DD_TRACE_STARTUP_LOGS=0 \
+    DD_VERSION=0.0.0
 
 # install nginx and php7-fpm
 # setup and make the working directories
 # setup timezone and delete the tzdata package
 # add the www-data user
-RUN apk --update --no-cache add nginx openssl dumb-init tzdata shadow \
+RUN apk --update --no-cache add wget nginx openssl dumb-init tzdata shadow \
     php7-fpm php7-json php7-gd php7-curl php7-dom php7-exif php7-gd \
     php7-iconv php7-imagick php7-json php7-mbstring php7-mysqli \
     php7-opcache php7-ctype php7-simplexml php7-xml php7-xmlreader && \
@@ -26,10 +29,6 @@ RUN apk --update --no-cache add nginx openssl dumb-init tzdata shadow \
     cp /usr/share/zoneinfo/${TIMEZONE} /etc/localtime && \
     echo "${TIMEZONE}" > /etc/timezone && \
     apk del tzdata
-
-# nginx:x:100:101:nginx:/var/lib/nginx:/sbin/nologin
-# www-data:x:1001:82:Linux User,,,:/home/www-data:/bin/false
-
 
 # Manually make some changes for the PHP.INI file
 RUN sed -i "s|;*date.timezone =.*|date.timezone = ${TIMEZONE}|i" /etc/php7/php.ini && \
@@ -40,19 +39,25 @@ RUN sed -i "s|;*date.timezone =.*|date.timezone = ${TIMEZONE}|i" /etc/php7/php.i
     sed -i "s|;*cgi.fix_pathinfo=.*|cgi.fix_pathinfo= 0|i" /etc/php7/php.ini && \
     sed -i "s|;*error_log = .*|error_log = \/proc\/self\/fd\/1|i" /etc/php7/php.ini
 
+# add datadog-php-tracer
+RUN wget -O /tmp/datadog-php-tracer_0.47.1_noarch.apk https://github.com/DataDog/dd-trace-php/releases/download/0.47.1/datadog-php-tracer_0.47.1_noarch.apk && \
+    apk add /tmp/datadog-php-tracer_0.47.1_noarch.apk --allow-untrusted
+
 # copy our config files over to the container
-COPY ./configs /etc
+COPY ./configs /
 
-# setup our working directory
-# copy over working code
-WORKDIR /app
-COPY ./code .
-
-RUN groupmod -g 1001 www-data && \
+RUN mv /etc/profile.d/color_prompt /etc/profile.d/color_prompt.sh && \
+    chmod a+x /etc/profile.d/aliases.sh /entrypoint.sh && \
+    groupmod -g 1001 www-data && \
     usermod -u 1001 -g 1001 -d /run/nginx nginx && \
     chown -R nginx:www-data /run/nginx /run/php7 /app && \
     chmod -R g+srwx /run/nginx /run/php7 /app && \
     apk del shadow
+
+# setup our working directory
+# copy over working code
+WORKDIR /app
+COPY --chown=1001:1001 ./code .
 
 # Setup Volume for persistance
 VOLUME /app
@@ -65,7 +70,7 @@ STOPSIGNAL SIGTERM
 USER nginx
 
 # start with our PID 1 controller
-ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+ENTRYPOINT [ "/entrypoint.sh" ]
 
 # what we use to start the container
-CMD ["/bin/sh", "-c", "php-fpm7 --daemonize && nginx"]
+CMD [ "service" ]
