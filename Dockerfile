@@ -1,4 +1,4 @@
-FROM alpine:3.12
+FROM alpine:3.15
 
 # Load ash profile on launch
 ENV ENV="/etc/profile"
@@ -24,7 +24,7 @@ ENV DD_SERVICE=laquerlabs \
 RUN apk --update --no-cache add wget nginx openssl dumb-init tzdata shadow \
     php7-fpm php7-json php7-gd php7-curl php7-dom php7-exif php7-gd \
     php7-iconv php7-imagick php7-json php7-mbstring php7-mysqli \
-    php7-opcache php7-ctype php7-simplexml php7-xml php7-xmlreader && \
+    php7-opcache php7-ctype php7-simplexml php7-xml php7-xmlreader php7-session && \
     mkdir -p /app /run/nginx /run/php7 && \
     cp /usr/share/zoneinfo/${TIMEZONE} /etc/localtime && \
     echo "${TIMEZONE}" > /etc/timezone && \
@@ -46,7 +46,7 @@ RUN wget -O /tmp/datadog-php-tracer_0.47.1_noarch.apk https://github.com/DataDog
 # copy our config files over to the container
 COPY ./configs /
 
-RUN mv /etc/profile.d/color_prompt /etc/profile.d/color_prompt.sh && \
+RUN mv /etc/profile.d/color_prompt.sh.disabled /etc/profile.d/color_prompt.sh && \
     chmod a+x /etc/profile.d/aliases.sh /entrypoint.sh && \
     groupmod -g 1001 www-data && \
     usermod -u 1001 -g 1001 -d /run/nginx nginx && \
